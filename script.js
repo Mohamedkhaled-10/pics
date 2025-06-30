@@ -1,3 +1,4 @@
+// تهيئة Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDMMu-QNPL6RlGYdGGQVJLzZqCC_hsLa8I",
   authDomain: "night-ac2a0.firebaseapp.com",
@@ -7,6 +8,12 @@ const firebaseConfig = {
   messagingSenderId: "202751732517",
   appId: "1:202751732517:web:5d458d19aac8d7135848cc"
 };
+
+// تهيئة تطبيق Firebase
+firebase.initializeApp(firebaseConfig);
+
+// تهيئة Firestore
+const db = firebase.firestore();
 
 const gallery = document.getElementById("gallery");
 const searchInput = document.getElementById("searchInput");
