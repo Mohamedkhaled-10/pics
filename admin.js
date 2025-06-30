@@ -1,8 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-// Firebase config
+// إعداد Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDMMu-QNPL6RlGYdGGQVJLzZqCC_hsLa8I",
   authDomain: "night-ac2a0.firebaseapp.com",
@@ -13,9 +9,10 @@ const firebaseConfig = {
   appId: "1:202751732517:web:5d458d19aac8d7135848cc"
 };
 
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+
+const storage = firebase.storage();
+const db = firebase.firestore();
 
 const form = document.getElementById("uploadForm");
 const status = document.getElementById("status");
@@ -27,10 +24,7 @@ function showToast(message, type = "success") {
   toast.textContent = message;
   document.body.appendChild(toast);
 
-  setTimeout(() => {
-    toast.classList.add("show");
-  }, 100);
-
+  setTimeout(() => toast.classList.add("show"), 100);
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 500);
@@ -50,10 +44,9 @@ form.addEventListener("submit", async (e) => {
   }
 
   const fileName = `${Date.now()}_${file.name}`;
-  const storageRef = ref(storage, `gallery/${fileName}`);
-  const uploadTask = uploadBytesResumable(storageRef, file);
+  const storageRef = storage.ref(`gallery/${fileName}`);
+  const uploadTask = storageRef.put(file);
 
-  // متابعة التقدم
   uploadTask.on("state_changed",
     (snapshot) => {
       const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -65,12 +58,9 @@ form.addEventListener("submit", async (e) => {
       showToast("❌ فشل في رفع الصورة", "error");
     },
     async () => {
-      const url = await getDownloadURL(uploadTask.snapshot.ref);
-      await addDoc(collection(db, "images"), {
-        src: url,
-        title,
-        category
-      });
+      const url = await uploadTask.snapshot.ref.getDownloadURL();
+      await db.collection("images").add({ src: url, title, category });
+
       progress.style.width = "0%";
       progress.textContent = "";
       form.reset();
