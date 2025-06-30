@@ -1,20 +1,3 @@
-// تهيئة Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDMMu-QNPL6RlGYdGGQVJLzZqCC_hsLa8I",
-  authDomain: "night-ac2a0.firebaseapp.com",
-  databaseURL: "https://night-ac2a0-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "night-ac2a0",
-  storageBucket: "night-ac2a0.appspot.com",
-  messagingSenderId: "202751732517",
-  appId: "1:202751732517:web:5d458d19aac8d7135848cc"
-};
-
-// تهيئة تطبيق Firebase
-firebase.initializeApp(firebaseConfig);
-
-// تهيئة Firestore
-const db = firebase.firestore();
-
 const gallery = document.getElementById("gallery");
 const searchInput = document.getElementById("searchInput");
 const categorySelect = document.getElementById("categorySelect");
@@ -26,7 +9,15 @@ const closeBtn = document.getElementById("lightbox-close");
 const downloadBtn = document.getElementById("downloadBtn");
 const scrollTopBtn = document.getElementById("scrollTopBtn");
 
-let images = [];
+const images = Array.from({ length: 40 }, (_, i) => {
+  const categories = ["Nature", "Architecture", "People", "Animals", "Technology", "Art"];
+  const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+  return {
+    src: https://picsum.photos/seed/${i}/600/400,
+    title: Image ${i + 1},
+    category: randomCategory
+  };
+});
 
 function renderImages(filter = "", category = "") {
   gallery.innerHTML = "";
@@ -36,14 +27,14 @@ function renderImages(filter = "", category = "") {
     return matchSearch && matchCategory;
   });
 
-  filtered.forEach(({ url, title, category }) => {
+  filtered.forEach(({ src, title, category }) => {
     const card = document.createElement("div");
     card.className = "card";
 
     const img = document.createElement("img");
-    img.src = url;
+    img.src = src;
     img.alt = title;
-    img.addEventListener("click", () => openLightbox({ src: url, title, category }));
+    img.addEventListener("click", () => openLightbox({ src, title, category }));
 
     const caption = document.createElement("div");
     caption.className = "caption";
@@ -63,7 +54,7 @@ function renderImages(filter = "", category = "") {
 function openLightbox({ src, title, category }) {
   lightboxImg.src = src;
   lightboxTitle.textContent = title;
-  lightboxCategory.textContent = `Category: ${category}`;
+  lightboxCategory.textContent = Category: ${category};
   downloadBtn.onclick = () => {
     const a = document.createElement("a");
     a.href = src;
@@ -73,7 +64,7 @@ function openLightbox({ src, title, category }) {
   lightbox.style.display = "flex";
 }
 
-closeBtn.onclick = () => (lightbox.style.display = "none");
+closeBtn.onclick = () => lightbox.style.display = "none";
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") lightbox.style.display = "none";
@@ -95,13 +86,4 @@ scrollTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-// جلب الصور من Firestore وتحديث المعرض تلقائيًا
-db.collection("images")
-  .orderBy("timestamp", "desc")
-  .onSnapshot((snapshot) => {
-    images = [];
-    snapshot.forEach((doc) => {
-      images.push(doc.data());
-    });
-    renderImages(searchInput.value.trim(), categorySelect.value);
-  });
+renderImages();
