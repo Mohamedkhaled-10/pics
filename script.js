@@ -13,8 +13,8 @@ const images = Array.from({ length: 40 }, (_, i) => {
   const categories = ["Nature", "Architecture", "People", "Animals", "Technology", "Art"];
   const randomCategory = categories[Math.floor(Math.random() * categories.length)];
   return {
-    src: https://picsum.photos/seed/${i}/600/400,
-    title: Image ${i + 1},
+    src: `https://picsum.photos/seed/${i}/600/400`,
+    title: `Image ${i + 1}`,
     category: randomCategory
   };
 });
@@ -54,7 +54,7 @@ function renderImages(filter = "", category = "") {
 function openLightbox({ src, title, category }) {
   lightboxImg.src = src;
   lightboxTitle.textContent = title;
-  lightboxCategory.textContent = Category: ${category};
+  lightboxCategory.textContent = `Category: ${category}`;
   downloadBtn.onclick = () => {
     const a = document.createElement("a");
     a.href = src;
