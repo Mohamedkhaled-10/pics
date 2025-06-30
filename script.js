@@ -9,15 +9,7 @@ const closeBtn = document.getElementById("lightbox-close");
 const downloadBtn = document.getElementById("downloadBtn");
 const scrollTopBtn = document.getElementById("scrollTopBtn");
 
-const images = Array.from({ length: 40 }, (_, i) => {
-  const categories = ["Nature", "Architecture", "People", "Animals", "Technology", "Art"];
-  const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-  return {
-    src: `https://picsum.photos/seed/${i}/600/400`,
-    title: `Image ${i + 1}`,
-    category: randomCategory
-  };
-});
+let images = [];
 
 function renderImages(filter = "", category = "") {
   gallery.innerHTML = "";
@@ -27,14 +19,14 @@ function renderImages(filter = "", category = "") {
     return matchSearch && matchCategory;
   });
 
-  filtered.forEach(({ src, title, category }) => {
+  filtered.forEach(({ url, title, category }) => {
     const card = document.createElement("div");
     card.className = "card";
 
     const img = document.createElement("img");
-    img.src = src;
+    img.src = url;
     img.alt = title;
-    img.addEventListener("click", () => openLightbox({ src, title, category }));
+    img.addEventListener("click", () => openLightbox({ src: url, title, category }));
 
     const caption = document.createElement("div");
     caption.className = "caption";
@@ -64,7 +56,7 @@ function openLightbox({ src, title, category }) {
   lightbox.style.display = "flex";
 }
 
-closeBtn.onclick = () => lightbox.style.display = "none";
+closeBtn.onclick = () => (lightbox.style.display = "none");
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") lightbox.style.display = "none";
@@ -86,4 +78,13 @@ scrollTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-renderImages();
+// جلب الصور من Firestore وتحديث المعرض تلقائيًا
+db.collection("images")
+  .orderBy("timestamp", "desc")
+  .onSnapshot((snapshot) => {
+    images = [];
+    snapshot.forEach((doc) => {
+      images.push(doc.data());
+    });
+    renderImages(searchInput.value.trim(), categorySelect.value);
+  });
