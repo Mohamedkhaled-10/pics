@@ -1,16 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة التحكم</title>
-  <link rel="stylesheet" href="admin.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة تحكم رفع الصور</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121218;
+      color: #f0f0f0;
+      padding: 20px;
+    }
+    .admin-panel {
+      max-width: 400px;
+      margin: auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #f5a623;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #f5a623;
+      text-shadow: 0 0 10px #f5a623;
+    }
+    form input[type="file"],
+    form input[type="text"],
+    form select,
+    form button {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 25px;
+      border: none;
+      font-size: 1rem;
+    }
+    form input[type="file"] {
+      padding: 3px;
+    }
+    form button {
+      background: #f5a623;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    form button:hover {
+      background: #ffbf47;
+    }
+    #progressBar {
+      height: 20px;
+      background: #444;
+      border-radius: 25px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      color: #f5a623;
+      text-align: center;
+      line-height: 20px;
+      font-weight: bold;
+      user-select: none;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      background: #333;
+      padding: 15px 30px;
+      border-radius: 30px;
+      opacity: 0;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 0 15px #f5a623;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.error {
+      background: #cc4444;
+      box-shadow: 0 0 15px #cc4444;
+    }
+  </style>
 </head>
 <body>
+
   <div class="admin-panel">
     <h1>رفع صورة جديدة</h1>
     <form id="uploadForm">
-        <div id="progressBar"></div>
-      <input type="file" id="imageFile" required />
+      <div id="progressBar"></div>
+      <input type="file" id="imageFile" accept="image/*" required />
       <input type="text" id="imageTitle" placeholder="اسم الصورة" required />
       <select id="imageCategory" required>
         <option value="">اختار النوع</option>
@@ -23,13 +105,121 @@
       </select>
       <button type="submit">نشر الصورة</button>
     </form>
-    <div id="status"></div>
   </div>
 
- <!-- Firebase CDN (بدون import) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="admin.js"></script>
+  <!-- Firebase CDN (Compatibility) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // إعداد Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDMMu-QNPL6RlGYdGGQVJLzZqCC_hsLa8I",
+  authDomain: "night-ac2a0.firebaseapp.com",
+  databaseURL: "https://night-ac2a0-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "night-ac2a0",
+  storageBucket: "night-ac2a0.appspot.com",
+  messagingSenderId: "202751732517",
+  appId: "1:202751732517:web:5d458d19aac8d7135848cc"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById("uploadForm");
+    const progressBar = document.getElementById("progressBar");
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.classList.add("show"), 100);
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 500);
+      }, 4000);
+    }
+
+    // عدّل هنا بيانات Cloudinary
+    const CLOUD_NAME = "dogk78w9z";  // غيّرها بـ cloud name الخاص بك
+    const UPLOAD_PRESET = "unsigned_preset"; // غيّرها باسم الـ preset الخاص بك (يجب أن يكون unsigned)
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById("imageFile");
+      const titleInput = document.getElementById("imageTitle");
+      const categorySelect = document.getElementById("imageCategory");
+
+      if (!fileInput.files.length || !titleInput.value.trim() || !categorySelect.value) {
+        showToast("❌ من فضلك اكمل كل الحقول.", "error");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const title = titleInput.value.trim();
+      const category = categorySelect.value;
+
+      const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", UPLOAD_PRESET);
+
+      try {
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("POST", url);
+
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = percent + "%";
+          }
+        });
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            progressBar.style.width = "0%";
+            progressBar.textContent = "";
+
+            showToast("✅ تم رفع الصورة بنجاح!");
+
+            // تخزين بيانات الصورة في Firestore
+            db.collection("images").add({
+              url: response.secure_url,
+              title: title,
+              category: category,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+              showToast("✅ تم حفظ بيانات الصورة في قاعدة البيانات!");
+              form.reset();
+            }).catch(err => {
+              showToast("❌ خطأ في حفظ بيانات الصورة!", "error");
+              console.error(err);
+            });
+
+          } else {
+            showToast("❌ فشل رفع الصورة، حاول مرة أخرى.", "error");
+          }
+        };
+
+        xhr.onerror = () => {
+          showToast("❌ حدث خطأ أثناء رفع الصورة.", "error");
+        };
+
+        xhr.send(formData);
+
+      } catch (err) {
+        console.error(err);
+        showToast("❌ حدث خطأ غير متوقع.", "error");
+      }
+    });
+  </script>
+
 </body>
 </html>
