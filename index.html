@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gallery</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- الشريط العلوي -->
+  <header class="topbar">
+    <div class="left-controls">
+      <input type="text" id="searchInput" placeholder="Search images..." />
+      <select id="categorySelect">
+        <option value="">All Categories</option>
+        <option value="Animals">Animals</option>
+        <option value="Architecture">Architecture</option>
+        <option value="Art">Art</option>
+        <option value="Nature">Nature</option>
+        <option value="People">People</option>
+        <option value="Technology">Technology</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- معرض الصور -->
+  <main id="gallery" class="gallery-container"></main>
+
+  <!-- زر العودة للأعلى -->
+  <button id="scrollTopBtn" title="Back to Top"><i class="fas fa-chevron-up"></i></button>
+
+  <!-- نافذة عرض الصورة (Lightbox) -->
+  <div id="lightbox" class="lightbox">
+    <span id="lightbox-close"><i class="fas fa-times"></i></span>
+    <img id="lightbox-img" src="" alt="Large View" />
+    <div class="lightbox-info">
+      <h2 id="lightbox-title"></h2>
+      <p id="lightbox-category"></p>
+      <button id="downloadBtn"><i class="fas fa-download"></i> Download</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
