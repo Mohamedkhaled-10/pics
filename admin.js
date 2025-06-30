@@ -1,22 +1,5 @@
-// إعداد Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDMMu-QNPL6RlGYdGGQVJLzZqCC_hsLa8I",
-  authDomain: "night-ac2a0.firebaseapp.com",
-  databaseURL: "https://night-ac2a0-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "night-ac2a0",
-  storageBucket: "night-ac2a0.appspot.com",
-  messagingSenderId: "202751732517",
-  appId: "1:202751732517:web:5d458d19aac8d7135848cc"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const storage = firebase.storage();
-const db = firebase.firestore();
-
 const form = document.getElementById("uploadForm");
-const status = document.getElementById("status");
-const progress = document.getElementById("progressBar");
+const progressBar = document.getElementById("progressBar");
 
 function showToast(message, type = "success") {
   const toast = document.createElement("div");
@@ -31,40 +14,71 @@ function showToast(message, type = "success") {
   }, 4000);
 }
 
+// عدّل هنا بياناتك
+const CLOUD_NAME = "dogk78w9z"; // غيره بـ cloud name بتاعك
+const UPLOAD_PRESET = "unsigned_preset"; // غيره باسم الـ preset اللي عملته
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const file = document.getElementById("imageFile").files[0];
-  const title = document.getElementById("imageTitle").value.trim();
-  const category = document.getElementById("imageCategory").value;
+  const fileInput = document.getElementById("imageFile");
+  const titleInput = document.getElementById("imageTitle");
+  const categorySelect = document.getElementById("imageCategory");
 
-  if (!file || !title || !category) {
+  if (!fileInput.files.length || !titleInput.value.trim() || !categorySelect.value) {
     showToast("❌ من فضلك اكمل كل الحقول.", "error");
     return;
   }
 
-  const fileName = `${Date.now()}_${file.name}`;
-  const storageRef = storage.ref(`gallery/${fileName}`);
-  const uploadTask = storageRef.put(file);
+  const file = fileInput.files[0];
+  const title = titleInput.value.trim();
+  const category = categorySelect.value;
 
-  uploadTask.on("state_changed",
-    (snapshot) => {
-      const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      progress.style.width = `${percent.toFixed(0)}%`;
-      progress.textContent = `${percent.toFixed(0)}%`;
-    },
-    (error) => {
-      console.error(error);
-      showToast("❌ فشل في رفع الصورة", "error");
-    },
-    async () => {
-      const url = await uploadTask.snapshot.ref.getDownloadURL();
-      await db.collection("images").add({ src: url, title, category });
+  const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
 
-      progress.style.width = "0%";
-      progress.textContent = "";
-      form.reset();
-      showToast("✅ تم رفع الصورة بنجاح!");
-    }
-  );
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", url);
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        progressBar.style.width = percent + "%";
+        progressBar.textContent = percent + "%";
+      }
+    });
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+        progressBar.style.width = "0%";
+        progressBar.textContent = "";
+
+        showToast("✅ تم رفع الصورة بنجاح!");
+
+        console.log("رابط الصورة في Cloudinary:", response.secure_url);
+
+        // هنا تقدر تخزن response.secure_url + title + category في قاعدة بياناتك
+
+        form.reset();
+      } else {
+        showToast("❌ فشل رفع الصورة، حاول مرة أخرى.", "error");
+      }
+    };
+
+    xhr.onerror = () => {
+      showToast("❌ حدث خطأ أثناء رفع الصورة.", "error");
+    };
+
+    xhr.send(formData);
+
+  } catch (err) {
+    console.error(err);
+    showToast("❌ حدث خطأ غير متوقع.", "error");
+  }
 });
