@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="admin-panel">
+    <h1>رفع صورة جديدة</h1>
+    <form id="uploadForm">
+        <div id="progressBar"></div>
+      <input type="file" id="imageFile" required />
+      <input type="text" id="imageTitle" placeholder="اسم الصورة" required />
+      <select id="imageCategory" required>
+        <option value="">اختار النوع</option>
+        <option value="Animals">Animals</option>
+        <option value="Architecture">Architecture</option>
+        <option value="Art">Art</option>
+        <option value="Nature">Nature</option>
+        <option value="People">People</option>
+        <option value="Technology">Technology</option>
+      </select>
+      <button type="submit">نشر الصورة</button>
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

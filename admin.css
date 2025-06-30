@@ -1,0 +1,88 @@
+body {
+  background: #121212;
+  color: white;
+  font-family: Arial;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+}
+
+.admin-panel {
+  background: #1f1f1f;
+  padding: 30px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+.admin-panel h1 {
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input, select, button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+}
+
+button {
+  background: #00ffaa;
+  color: black;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#status {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #88ff88;
+}
+
+#progressBar {
+  height: 20px;
+  width: 0%;
+  background-color: #00ffaa;
+  color: #000;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 6px;
+  transition: width 0.3s;
+  margin-top: 10px;
+}
+
+/* إشعار (توست) عصري */
+.toast {
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 24px;
+  border-radius: 8px;
+  background: #222;
+  color: #fff;
+  font-weight: bold;
+  opacity: 0;
+  transition: all 0.4s ease;
+  z-index: 9999;
+}
+
+.toast.success {
+  background-color: #00cc88;
+}
+
+.toast.error {
+  background-color: #cc3333;
+}
+
+.toast.show {
+  bottom: 30px;
+  opacity: 1;
+}
